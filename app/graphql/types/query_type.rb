@@ -1,13 +1,28 @@
-module Types
-  class QueryType < Types::BaseObject
-    # Add root-level fields here.
-    # They will be entry points for queries on your schema.
+Types::QueryType = GraphQL::ObjectType.define do
+ name "Query"
 
-    # TODO: remove me
-    field :test_field, String, null: false,
-      description: "An example field added by the generator"
-    def test_field
-      "Hello World!"
-    end
+ # chamamos o field de "user" e ele terá um
+ # namespace chamado "Types" que chamamos
+ # de "UserType" e ficará em
+
+ # app/graphql/types/user_type.rb
+ field :user, Types::UserType do
+   # passamos aqui o "id" do User como argumento de consulta
+   # esse valor de "id" vem do front-end para o back-end
+   argument :id, types.ID # o "id" tem um tipo especial chamado ID
+   description "Identificação do Usuário"
+
+   # aqui é o método chamado "resolve" que resgata
+   # os dados de User do banco de dados
+   resolve -> (obj, args, ctx) {
+     User.where(id: args[:id]).first
+   }
+ end
+
+ field :allUsers, types[Types::UserType] do
+    description "Retorna todos Usuarios"
+    resolve -> (obj, args, ctx) {
+      User.all
+    }
   end
 end
